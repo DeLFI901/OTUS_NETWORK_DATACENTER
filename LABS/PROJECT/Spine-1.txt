@@ -1,0 +1,106 @@
+!Command: show running-config
+!No configuration change since last restart
+!Time: Tue May 13 18:08:55 2025                                                                                         
+version 10.4(2) Bios:version
+hostname Spine-1
+vdc Spine-1 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4097
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+nv overlay evpn
+feature ospf
+feature bgp
+feature isis
+feature vn-segment-vlan-based
+feature bfd
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$OJIDIK$zPPAGeIeiUidwYquVdIJgfcG2tyUiIPUT0nbI9Ti9A4
+role network-admin
+ip domain-lookup  
+copp profile strict
+bfd interval 500 min_rx 500 multiplier 3
+snmp-server user admin network-admin auth md5 5331FAF6799A7DEB896C355F9F45DA50AF
+D8 priv aes-128 174896B88D60970C7286B09944DD3ED3204E localizedV2key
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+vlan 1
+
+route-map REDIST_LOOPBACK permit 10
+  match interface loopback0
+vrf context management
+
+interface Ethernet1/1
+  description LINK-TO-Leaf-1
+  no ip redirects
+  ip address 10.101.109.1/30
+  ip ospf message-digest-key 0 md5 3 a01efc0492d53b40c0b3aa9b18731403
+  ip ospf network point-to-point
+  no ip ospf passive-interface 
+  ip router ospf 100 area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/2
+  description LINK-TO-Leaf-2
+  ip address 10.101.109.5/30
+  ip ospf message-digest-key 0 md5 3 a01efc0492d53b40c0b3aa9b18731403
+  ip ospf network point-to-point
+  no ip ospf passive-interface
+  ip router ospf 100 area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/3
+  description LINK-TO-Leaf-3
+  ip address 10.101.109.9/30
+  ip ospf message-digest-key 0 md5 3 a01efc0492d53b40c0b3aa9b18731403
+  ip ospf network point-to-point
+  no ip ospf passive-interface
+  ip router ospf 100 area 0.0.0.0
+  no shutdown
+  
+  interface mgmt0
+  vrf member management
+
+interface loopback0
+  ip address 10.101.101.1/32
+icam monitor scale
+
+line console                                                                                                            
+line vty
+boot nxos bootflash:/nxos64-cs.10.4.2.F.bin
+router ospf 100
+  router-id 10.101.101.1
+  redistribute direct route-map REDIST_LOOPBACK
+  log-adjacency-changes
+  maximum-paths 2
+  passive-interface default
+ router bgp 65000
+  router-id 10.101.101.1
+  timers bgp 3 9
+  reconnect-interval 10 
+  log-neighbor-changes
+  address-family l2vpn evpn
+    maximum-paths 2
+  neighbor 10.201.101.1
+    remote-as 65000
+    update-source loopback0
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-reflector-client
+  neighbor 10.203.101.1
+    remote-as 65000
+    update-source loopback0
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-reflector-client
+	  
