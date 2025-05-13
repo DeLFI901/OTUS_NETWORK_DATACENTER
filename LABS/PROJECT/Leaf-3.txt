@@ -1,0 +1,124 @@
+!Command: show running-config
+!Running configuration last done at: Tue May 13 16:29:55 2025
+!Time: Tue May 13 18:01:56 2025
+
+version 10.4(2) Bios:version
+hostname Leaf-3
+vdc Leaf-3 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4097
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+nv overlay evpn
+feature ospf
+feature bgp
+feature isis
+feature vn-segment-vlan-based
+feature bfd
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$KKCBGF$mZi.lNm/N0Vokpzl4mHoNhq144CglHNPat1.mmK66U7
+ role network-admin
+ip domain-lookup
+copp profile strict
+snmp-server user admin network-admin auth md5 3329151FF4DA796F136B83D8FA0870A56E
+42 priv aes-128 0176474D84D80F105153BD86A4453CB9423A localizedV2key
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
+
+vlan 1,10,998
+vlan 10
+  name EVPN-VLAN-10
+  vn-segment 10
+vlan 998
+  name UniFi-EVPN
+  vn-segment 998
+
+route-map REDIST_LOOPBACK permit 10
+  match interface loopback0
+vrf context management
+
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback0
+  member vni 10
+    ingress-replication protocol bgp
+  member vni 998
+    ingress-replication protocol bgp
+	
+interface Ethernet1/1
+  description LINK-TO-Spine-1
+  ip address 10.101.109.10/30
+  ip ospf message-digest-key 0 md5 3 a01efc0492d53b40c0b3aa9b18731403
+  ip ospf network point-to-point
+  no ip ospf passive-interface
+  ip router ospf 100 area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/2
+  description LINK-TO-Spine-2
+  ip address 10.102.109.10/30
+  ip ospf message-digest-key 0 md5 3 a01efc0492d53b40c0b3aa9b18731403
+  ip ospf network point-to-point
+  no ip ospf passive-interface
+  ip router ospf 100 area 0.0.0.0
+  no shutdown
+  
+interface Ethernet1/5
+  description LINK-TO-ESXi-2
+  switchport
+  switchport access vlan 998
+  no shutdown
+
+interface mgmt0
+  vrf member management
+
+interface loopback0
+  ip address 10.203.101.1/32
+icam monitor scale
+
+line console
+line vty
+boot nxos bootflash:/nxos64-cs.10.4.2.F.bin
+router ospf 100
+  router-id 10.203.101.1
+  redistribute direct route-map REDIST_LOOPBACK
+  log-adjacency-changes
+  maximum-paths 2
+  passive-interface default
+router bgp 65000
+  router-id 10.203.101.1
+  timers bgp 3 9
+  reconnect-interval 10
+  log-neighbor-changes
+  address-family l2vpn evpn
+    maximum-paths 2
+  neighbor 10.101.101.1
+    remote-as 65000
+    update-source loopback0
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 10.201.101.1
+    remote-as 65000
+    update-source loopback0
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+evpn
+  vni 10 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+  vni 998 l2
+    rd auto
+    route-target import auto
+    route-target export auto
