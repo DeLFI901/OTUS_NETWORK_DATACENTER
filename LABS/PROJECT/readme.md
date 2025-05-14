@@ -26,3 +26,6 @@
 3. [Файл конфигурации Spine-коммутатора](https://github.com/DeLFI901/OTUS_NETWORK_DATACENTER/blob/main/LABS/PROJECT/Spine-1.txt)
 4. [Файл конфигурации Leaf-1-коммутатора](https://github.com/DeLFI901/OTUS_NETWORK_DATACENTER/blob/main/LABS/PROJECT/Leaf-1.txt)
 5. [Файл конфигурации Leaf-3-коммутатора](https://github.com/DeLFI901/OTUS_NETWORK_DATACENTER/blob/main/LABS/PROJECT/Leaf-3.txt)
+6. [Схема существующей сети](https://github.com/DeLFI901/OTUS_NETWORK_DATACENTER/blob/main/LABS/PROJECT/NAT-UniFi.jpeg)
+7. [Схема сети с использованием VxLAN\EVPN](https://github.com/DeLFI901/OTUS_NETWORK_DATACENTER/blob/main/LABS/PROJECT/VxLAN-L2-VNI-UniFI.jpeg)
+8. [Общая схема решения](https://github.com/DeLFI901/OTUS_NETWORK_DATACENTER/blob/main/LABS/PROJECT/Proejct.jpeg)
